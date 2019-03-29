@@ -5,6 +5,7 @@
 typedef std::vector <int> configuration; 
 typedef std::vector <std::vector<int>> jobs; 
 
+void read_jobs_data(jobs * data); 
 uint32_t calculate_cmax(jobs data); 
 void add_indexes_to_jobs(jobs * data);
 void find_solution_by_permutation(jobs data);
@@ -12,32 +13,28 @@ configuration get_current_configuration(jobs data);
 void print_current_configuration(jobs data);
 void print_current_configuration(configuration con);
 
+
+
 int main(int argc, char **argv) {
 	jobs data; 
-	// data.push_back({4,5}); 
-	// data.push_back({4,1}); 
-	// data.push_back({10,4}); 
-	// data.push_back({6,10}); 
-	// data.push_back({2,3}); 
-
-	// data.push_back({5,2}); 
-	// data.push_back({5,1}); 
-	// data.push_back({6,2}); 
-	// data.push_back({4,3}); 
-	// data.push_back({2,6});
-	// data.push_back({1,7});
-
-	data.push_back({4,5,1}); 
-	data.push_back({4,1,1}); 
-	data.push_back({10,4,1}); 
-	data.push_back({6,10,1}); 
-	data.push_back({2,3,1}); 
-	data.push_back({6,10,1}); 
+	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
-	do {
-		std::cout << calculate_cmax(data) << std::endl; 
-	} while(std::next_permutation(data.begin(),data.end())); 
+	find_solution_by_permutation(data); 
 	return 0; 
+}
+
+
+void read_jobs_data(jobs * data){
+	int x, a, b; 
+	std::cin >> a >> b;
+	for(int i=0; i<a; ++i){
+			std::cin >> x; 
+			data->push_back({x}); 
+		for(int j=1; j<b; ++j){
+			std::cin >> x; 
+			(*data)[i].push_back(x); 
+		}
+	}
 }
 
 uint32_t calculate_cmax(jobs data){
@@ -64,9 +61,17 @@ void add_indexes_to_jobs(jobs * data){
 }
 
 void find_solution_by_permutation(jobs data){
+	jobs tmp = data; 
+	uint32_t cmax_min = calculate_cmax(data); 
 	do {
-		std::cout << calculate_cmax(data) << std::endl; 
+		if(cmax_min>calculate_cmax(data)){
+			cmax_min = calculate_cmax(data); 
+			tmp = data; 
+		}
 	} while(std::next_permutation(data.begin(),data.end())); 
+	std::cout << "Solution by permutation: " << std::endl; 
+	std::cout << "Cmax: " << cmax_min << std::endl; 
+	print_current_configuration(tmp); 
 }
 
 configuration get_current_configuration(jobs data){
