@@ -20,7 +20,6 @@ int main(int argc, char **argv) {
 	jobs data; 
 	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
-	print_jobs_data(&data); 
 	find_solution_by_permutation(data); 
 	return 0; 
 }
@@ -72,16 +71,15 @@ void add_indexes_to_jobs(jobs * data){
 }
 
 void find_solution_by_permutation(jobs data){
-	jobs tmp = data; 
-	//std::sort(data.begin(),data.end()); 
+	configuration tmp; 
 	uint32_t cmax_min = calculate_cmax(data); 
+	std::sort(data.begin(),data.end()); 
 	do {
 		if(cmax_min>calculate_cmax(data)){
 			cmax_min = calculate_cmax(data); 
-			tmp = data; 
+			tmp = get_current_configuration(data); 
 		}
-		std::cout << "Tmp Cmax: " << cmax_min << std::endl; 
-	} while(std::next_permutation(data.begin(),data.end())); 
+	} while(std::next_permutation(data.begin(), data.end())); 
 	std::cout << "Solution by permutation: " << std::endl; 
 	std::cout << "Cmax: " << cmax_min << std::endl; 
 	print_current_configuration(tmp); 
@@ -90,7 +88,7 @@ void find_solution_by_permutation(jobs data){
 configuration get_current_configuration(jobs data){
 	configuration tmp; 
 	for(int i=0; i<data.size(); ++i){
-		tmp.push_back(data[i][data[0].size()-1]); 
+		tmp.push_back(data[i][data[i].size()-1]); 
 	}
 	return tmp;
 }
