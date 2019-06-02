@@ -9,6 +9,7 @@ void read_jobs_data(jobs * data);
 void add_indexes_to_jobs(jobs * data);
 void print_jobs_data(jobs* data); 
 uint32_t calculate_cmax(jobs data); 
+void find_solution_by_neh_alghoritm(jobs data); 
 configuration get_current_configuration(jobs data);
 void print_current_configuration(jobs data);
 void print_current_configuration(configuration con);
@@ -19,6 +20,7 @@ int main(int argc, char **argv) {
 	jobs data; 
 	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
+	find_solution_by_neh_alghoritm(data); 
 	return 0; 
 }
 
@@ -66,6 +68,36 @@ uint32_t calculate_cmax(jobs data){
 		cmax = time[data.size()-1][j]; 
 	}
 	return cmax; 
+}
+
+void find_solution_by_neh_alghoritm(jobs data){
+	//SUM time on all machines
+	jobs sum_data; 
+	for(int i=0; i<data.size(); ++i){
+		int sum=0; 
+		for(int j=0; j<data[i].size()-1; ++j){
+			sum += data[i][j]; 
+		}
+		std::vector<int> tmp; 
+		tmp.push_back(sum); 
+		tmp.push_back(data[i][data[i].size()-1]); 
+		sum_data.push_back(tmp); 
+	}
+
+	//sort data
+	jobs sorted_sum_data; 
+	do {
+		int max = sum_data[0][0], max_i=0;
+		for(int i=0; i<sum_data.size(); ++i){
+			if(max<sum_data[i][0]){
+				max=sum_data[i][0]; 
+				max_i=i; 
+			}
+		} 
+		sorted_sum_data.push_back(sum_data[max_i]); 
+		sum_data.erase(sum_data.begin()+max_i); 
+	} while(sum_data.size()>0); 
+	
 }
 
 configuration get_current_configuration(jobs data){
