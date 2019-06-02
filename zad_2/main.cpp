@@ -1,14 +1,17 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <climits>
 
 typedef std::vector <int> configuration; 
+typedef std::vector <int> job; 
 typedef std::vector <std::vector<int>> jobs; 
 
 void read_jobs_data(jobs * data); 
 void add_indexes_to_jobs(jobs * data);
 void print_jobs_data(jobs* data); 
 uint32_t calculate_cmax(jobs data); 
+void find_solution_by_permutation(jobs data); 
 void find_solution_by_neh_alghoritm(jobs data); 
 configuration get_current_configuration(jobs data);
 void print_current_configuration(jobs data);
@@ -20,6 +23,7 @@ int main(int argc, char **argv) {
 	jobs data; 
 	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
+	//find_solution_by_permutation(data); 
 	find_solution_by_neh_alghoritm(data); 
 	return 0; 
 }
@@ -54,8 +58,11 @@ void print_jobs_data(jobs* data){
 }
 
 uint32_t calculate_cmax(jobs data){
-	uint32_t cmax=0; 
+	uint32_t cmax=0; 	
 	std::vector<std::vector<int>> time;
+	if(data.size() == 0){
+		return 0; 
+	}
 	time.push_back({data[0][0], 0}); 
 	for(int i=1; i<data.size(); ++i){
 		time.push_back({time[i-1][0]+data[i][0],0}); 
@@ -68,6 +75,21 @@ uint32_t calculate_cmax(jobs data){
 		cmax = time[data.size()-1][j]; 
 	}
 	return cmax; 
+}
+
+void find_solution_by_permutation(jobs data){
+	configuration tmp; 
+	uint32_t cmax_min = calculate_cmax(data); 
+	std::sort(data.begin(),data.end()); 
+	do {
+		if(cmax_min>calculate_cmax(data)){
+			cmax_min = calculate_cmax(data); 
+			tmp = get_current_configuration(data); 
+		}
+	} while(std::next_permutation(data.begin(), data.end())); 
+	std::cout << "Solution by permutation: " << std::endl; 
+	std::cout << "Cmax: " << cmax_min << std::endl; 
+	print_current_configuration(tmp); 
 }
 
 void find_solution_by_neh_alghoritm(jobs data){
@@ -97,7 +119,26 @@ void find_solution_by_neh_alghoritm(jobs data){
 		sorted_sum_data.push_back(sum_data[max_i]); 
 		sum_data.erase(sum_data.begin()+max_i); 
 	} while(sum_data.size()>0); 
-	
+
+	jobs neh_data; 
+	do {
+		job tmp_job=data[sorted_sum_data[0][1]-1]; 
+		int min_i=0, CmaxMin=INT_MAX; 
+		for(int i=0; i<neh_data.size()+1; ++i){
+			jobs neh_data_copy = neh_data; 
+			neh_data_copy.insert(neh_data_copy.begin()+i, tmp_job); 
+			if(CmaxMin > calculate_cmax(neh_data_copy)){
+				CmaxMin=calculate_cmax(neh_data_copy); 
+				min_i=i; 
+			}
+		}
+		neh_data.insert(neh_data.begin()+min_i, tmp_job); 
+		sorted_sum_data.erase(sorted_sum_data.begin()); 
+	} while(sorted_sum_data.size()>0); 
+	print_jobs_data(&neh_data); 
+	std::cout << "Solution by neh: " << std::endl; 
+	std::cout << "Cmax: " << calculate_cmax(neh_data) << std::endl; 
+	print_current_configuration(neh_data); 
 }
 
 configuration get_current_configuration(jobs data){
