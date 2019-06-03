@@ -59,21 +59,26 @@ void print_jobs_data(jobs* data){
 
 uint32_t calculate_cmax(jobs data){
 	uint32_t cmax=0; 	
-	std::vector<std::vector<int>> time;
-	if(data.size() == 0){
-		return 0; 
+	std::vector<uint32_t> time;
+
+	//create place for every job
+	for(int i=0; i<data[0].size()-1; ++i){
+		int x=0; 
+		time.push_back(x); 
 	}
-	time.push_back({data[0][0], 0}); 
-	for(int i=1; i<data.size(); ++i){
-		time.push_back({time[i-1][0]+data[i][0],0}); 
-	}
-	for(int j=1; j<data[0].size()-1; ++j){
-		time[0][j]=time[0][j-1]+data[0][j]; 
-		for(int i=1; i<data.size(); ++i){
-			time[i][j]=data[i][j]+(time[i][j-1]>time[i-1][j]?time[i][j-1]:time[i-1][j]); 
+
+	for(int i=0; i<data.size(); ++i){
+		for(int j=0; j<data[i].size()-1; ++j){
+			if(j==0){
+				time[j] += data[i][j]; 
+			} else {
+				time[j] = std::max(time[j-1], time[j]) + data[i][j]; 
+				//std::cout << "Iter_i: " << i << " Iter_j: " << j << " Time: " << time[j] << std::endl; 
+			}
 		}
-		cmax = time[data.size()-1][j]; 
 	}
+
+	cmax = time[time.size()-1]; 
 	return cmax; 
 }
 
@@ -127,6 +132,7 @@ void find_solution_by_neh_alghoritm(jobs data){
 		for(int i=0; i<neh_data.size()+1; ++i){
 			jobs neh_data_copy = neh_data; 
 			neh_data_copy.insert(neh_data_copy.begin()+i, tmp_job); 
+			calculate_cmax(neh_data_copy); 
 			if(CmaxMin > calculate_cmax(neh_data_copy)){
 				CmaxMin=calculate_cmax(neh_data_copy); 
 				min_i=i; 
@@ -135,7 +141,8 @@ void find_solution_by_neh_alghoritm(jobs data){
 		neh_data.insert(neh_data.begin()+min_i, tmp_job); 
 		sorted_sum_data.erase(sorted_sum_data.begin()); 
 	} while(sorted_sum_data.size()>0); 
-	print_jobs_data(&neh_data); 
+
+	//print_jobs_data(&neh_data); 
 	std::cout << "Solution by neh: " << std::endl; 
 	std::cout << "Cmax: " << calculate_cmax(neh_data) << std::endl; 
 	print_current_configuration(neh_data); 
