@@ -15,6 +15,7 @@ int find_solution_by_shrage(jobs data);
 int find_solution_by_shrage(jobs data, jobs* pi); 
 int find_solution_by_shrage_pmtn(jobs data); 
 int find_solution_by_carlier(jobs data); 
+int find_solution_by_carlier(jobs pi, jobs best_pi, int ub); 
 configuration get_current_configuration(jobs data);
 void print_current_configuration(jobs data);
 void print_current_configuration(configuration con);
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
 	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
 	std::cout << "Cmax1: " << find_solution_by_shrage(data) << std::endl; 
-	std::cout << "Cmax2: " << find_solution_by_shrage_pmtn(data) << std::endl; 
+	std::cout << "Cmax2: " << find_solution_by_carlier(data) << std::endl; 
 	return 0; 
 }
 
@@ -160,6 +161,71 @@ int find_solution_by_shrage_pmtn(jobs data){
 	}
 
 	return Cmax; 
+}
+
+int find_solution_by_carlier(jobs data){
+	jobs best_pi, pi; 
+	int ub = find_solution_by_shrage(data, &pi); 
+	return find_solution_by_carlier(pi, best_pi, ub); 
+}
+
+int find_solution_by_carlier(jobs pi, jobs best_pi, int ub){
+	jobs tmp; 
+	int a=0, b=0, c=-1, cpop=0; 
+	int u = find_solution_by_shrage(pi, &tmp); 
+	if(u<ub){
+		ub = u; 
+		best_pi = tmp; 
+	}
+	for(int i=0; i<tmp.size(); ++i){
+		cpop = std::max(cpop, tmp[i][0]) + tmp[i][1]; 
+		if(cpop+tmp[i][2] == u){
+			b = i; 
+		}
+	}
+	int sum_tasks = 0; 
+	for(int i=pi.size()-1; i>=0; --i){
+		sum_tasks += tmp[i][1]; 
+		if(u == sum_tasks+tmp[i][0]+tmp[b][2]){
+			a=i; 
+		}
+	}
+	for(int i=a; i<b+1; ++i){
+		if(tmp[i][2]<tmp[b][2]){
+			c=i; 
+		}
+	}
+	if(c<0){
+		return ub; 
+	}
+	int rp=tmp[c+1][0], pp=0, qp=tmp[c+1][2]; 
+	for(int i=c+1; i<b; ++i){
+		pp+=tmp[i][1]; 
+		if(rp>tmp[i][0]){
+			rp=tmp[i][0]; 
+		}
+		if(qp<tmp[i][2]){
+			qp=tmp[i][2]; 
+		}
+	}
+
+	int opirc = tmp[c][0]; 
+	tmp[c][0] = std::max(tmp[c][0], rp+pp); 
+	int lb = find_solution_by_shrage_pmtn(tmp); 
+	if(lb<ub){
+		ub = find_solution_by_carlier(tmp, best_pi, ub); 
+	}
+	tmp[c][0]=opirc; 
+
+	int opiqc = tmp[c][2]; 
+	tmp[c][2] = std::max(tmp[c][2],qp+pp); 
+	lb = find_solution_by_shrage_pmtn(tmp); 
+	if(lb<ub){
+		ub = find_solution_by_carlier(tmp, best_pi, ub); 
+	}
+	tmp[c][2] = opiqc; 
+
+	return ub; 
 }
 
 configuration get_current_configuration(jobs data){
