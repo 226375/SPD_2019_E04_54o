@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 	jobs data; 
 	read_jobs_data(&data); 
 	add_indexes_to_jobs(&data);
-	find_solution_by_permutation(data); 
+	//find_solution_by_permutation(data); 
 	find_solution_by_johnsons_alghoritm(data); 
 	return 0; 
 }
@@ -140,13 +140,24 @@ configuration johnsons_for_two_machines(jobs data){
 
 void find_solution_by_johnsons_alghoritm(jobs data){
 	if(data[0].size()-1==3){
-		convert_machines_no(&data);
+		jobs tmp_data = data; 
+		jobs ordered_data; 
+		convert_machines_no(&tmp_data);
+		configuration out_config= johnsons_for_two_machines(tmp_data); 
+		for(int i=0; i<out_config.size(); ++i){
+			for(int j=0; j<data.size(); ++j){
+				if(data[j][data[j].size()-1] == out_config[i]){
+					ordered_data.push_back(data[j]); 
+				}
+			}
+
+		}
 		std::cout << "Solution by Johnsons alghoritm: " << std::endl; 
-		//std::cout << "Cmax: " << calculate_cmax(data) << std::endl; 
-		print_current_configuration(johnsons_for_two_machines(data)); 
+		std::cout << "Cmax: " << calculate_cmax(ordered_data) << std::endl; 
+		print_current_configuration(out_config); 
 	} else if (data[0].size()-1==2){
 		std::cout << "Solution by Johnsons alghoritm: " << std::endl; 
-		//std::cout << "Cmax: " << calculate_cmax(data) << std::endl; 
+		std::cout << "Cmax: " << calculate_cmax(data) << std::endl; 
 		print_current_configuration(johnsons_for_two_machines(data)); 
 	} else {
 		std::cout << "Wrong size for Johnsons alghoritm" << std::endl; 
